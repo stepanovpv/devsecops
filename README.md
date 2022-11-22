@@ -10,6 +10,7 @@ docker build . -t maniaque/finenomore:1.0
 docker push maniaque/finenomore:1.0
 ```
 
+
 # Как запустить на своей машине?
 
 ```
@@ -57,10 +58,3 @@ cd k8s/finenomore
 ```
 helm install finenomore .
 ```
-
-
-
-
-
-
-

@@ -7,6 +7,11 @@ postgres:
   storageSize: 5Gi
   labels:
     app: postgres
+  secret: finenomore-db
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64M
 
 finenomore:
   imagePullSecrets: []
@@ -14,12 +19,17 @@ finenomore:
   image: maniaque/finenomore:1.0
   labels:
     app: finenomore
+  secret: finenomore-app
   ports:
     internal: 80
     external: 80
   ingress:
     host: ""
     prefix: ""
+  resources:
+    requests:
+      cpu: 25m
+      memory: 64M
 
 
 

@@ -1,11 +1,7 @@
-FROM python:3.6.12-slim-stretch
+FROM python:3.10.8-alpine
 
 ENV APP_HOME /app
 WORKDIR $APP_HOME
-
-RUN apt-get update && apt-get install -y locales ca-certificates --no-install-recommends \
-    && printf 'en_US.UTF-8 UTF-8\n' >> /etc/locale.gen && locale-gen \
-    && rm -rf /var/cache/apt/archives/*
 
 COPY ./app/requirements.txt .
 RUN pip install --no-cache-dir  -r requirements.txt
