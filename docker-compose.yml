@@ -12,5 +12,10 @@ services:
     restart: unless-stopped
   finenomore:
     build: .
+    environment:
+      POSTGRES_PASSWORD: LTAIsupersecretkeyfordat
+      POSTGRES_USER: finenomore
+      POSTGRES_DB: finenomore
+            POSTGRES_HOST: postgres
     ports:
       - 8090:80
