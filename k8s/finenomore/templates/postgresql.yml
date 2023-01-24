@@ -99,6 +99,7 @@ spec:
               name: postgredb
             - mountPath: /docker-entrypoint-initdb.d
               name: postgreinit
+          resources: {{ .Values.finenomore.resources | toYaml | nindent 12 }}
       volumes:
         - name: postgredb
           persistentVolumeClaim:
