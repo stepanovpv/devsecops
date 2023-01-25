@@ -11,6 +11,7 @@ stages:
   - test
   - report
   - deploy
+  - publish
 
 variables:
   IMAGE_NAME: "${CI_REGISTRY_IMAGE}/${CI_COMMIT_REF_SLUG}:${CI_COMMIT_SHA}"
@@ -30,6 +31,8 @@ variables:
   image: dtzar/helm-kubectl:3.9
   before_script:
     - kubectl config use-context $GITLAB_AGENT
+  rules:
+    - if: $CI_COMMIT_BRANCH
 
 .defectdojo_publish:
   stage: report
@@ -49,6 +52,8 @@ variables:
             --form "file=@${DEFECTDOJO_SCAN_FILE}" \
             --form "close_old_findings=\"${DEFECTDOJO_SCAN_CLOSE_OLD_FINDINGS}\"" \
             --form "environment=\"${DEFECTDOJO_SCAN_ENVIRONMENT}\""
+  rules:
+    - if: $CI_COMMIT_BRANCH
 
 defectdojo_create_engagement:
   stage: report-prepare
@@ -105,6 +110,8 @@ defectdojo_create_engagement:
   artifacts:
     reports:
       dotenv: defectdojo.env
+  rules:
+    - if: $CI_COMMIT_BRANCH
 
 secret_detection:
   stage: pre-build
@@ -143,6 +150,8 @@ trivy-sca:
   artifacts:
     paths:
       - trivy-sca.json
+  rules:
+    - if: $CI_COMMIT_BRANCH
 
 kaniko-build:
   image:
@@ -155,7 +164,7 @@ kaniko-build:
       --dockerfile "${CI_PROJECT_DIR}/Dockerfile"
       --destination "${IMAGE_NAME}"
   rules:
-    - if: $CI_COMMIT_BRANCH
+    - if: $CI_COMMIT_BRANCH || $CI_COMMIT_TAG
       exists:
         - Dockerfile
 
@@ -192,6 +201,8 @@ dast-scan:
     when: always
     paths:
       - zap.xml
+  rules:
+    - if: $CI_COMMIT_BRANCH
 
 dast-destroy:
   extends: .deploy
@@ -253,3 +264,20 @@ deploy_app:
       --set finenomore.image=${IMAGE_NAME}
       --set finenomore.imagePullSecrets=gitlab-credentials
       --atomic
+
+publish_app:
+  stage: publish
+  image:
+    name: gcr.io/go-containerregistry/crane:debug
+    entrypoint: [""]
+  script:
+    - crane auth login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+    - crane pull ${IMAGE_NAME} finenomore.tar
+    - cat ${YCR_AUTH_KEY} | crane auth login
+      --username json_key
+      --password-stdin
+      cr.yandex
+    - crane push finenomore.tar cr.yandex/${YCR_REGISTRY_ID}/finenomore:$CI_COMMIT_TAG
+    - crane push finenomore.tar cr.yandex/${YCR_REGISTRY_ID}/finenomore:latest
+  rules:
+    - if: $CI_COMMIT_TAG =~ /^v\d+.\d+.\d+-?.*$/
