@@ -28,7 +28,9 @@ spec:
           imagePullPolicy: IfNotPresent
           envFrom:
             - secretRef:
-                name: {{ .Values.postgres.secret }}  
+                name: {{ .Values.postgres.secret }} 
+            - secretRef:
+                name: {{ .Values.finenomore.secret }}
           ports:
             - containerPort: {{ .Values.finenomore.ports.internal }}
           resources: {{ .Values.finenomore.resources | toYaml | nindent 12 }}

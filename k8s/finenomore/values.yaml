@@ -19,6 +19,7 @@ finenomore:
   image: maniaque/finenomore:1.0
   labels:
     app: finenomore
+  secret: finenomore-app
   ports:
     internal: 80
     external: 80
